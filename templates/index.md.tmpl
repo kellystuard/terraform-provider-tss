@@ -2,15 +2,15 @@
 layout: ""
 page_title: "Provider: Thycotic Secret Server"
 description: |-
-  The Thycotic Secret Server provider provides resources to interact with a Thycotic Secret Server API.
+  The Thycotic Secret Server provider provides resources to interact with a Thycotic Secret Server REST API.
 ---
 
 # Thycotic Secret Server Provider
 
-The Thycotic Secret Server provider provides resources to interact with a Thycotic Secret Server API.
+The [Thycotic Secret Server](https://thycotic.com/products/secret-server/) provider provides resources to interact with a Thycotic Secret Server [REST API](https://updates.thycotic.net/secretserver/restapiguide/).
 
 It is not recommended to use your own account for management of secrets. A user specific to
-Terraform is recommended. You can create a **Limited Admin** with **Local Access Only** and
+Terraform is recommended. You can create a user with **Application Account** checked and
 provide that information for authentication. Two-factor authentication is not supported in the provider.
 
 ## Example Usage
