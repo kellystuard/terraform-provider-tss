@@ -18,7 +18,7 @@ func TestAccDataSourceSecretField(t *testing.T) {
 				Config: testAccDataSourceSecretField,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						"data.tss_secret_field.foo", "sample_attribute", regexp.MustCompile("^ba")),
+						"data.tss_secret_field.foo", "number", regexp.MustCompile("^1")),
 				),
 			},
 		},
@@ -27,7 +27,7 @@ func TestAccDataSourceSecretField(t *testing.T) {
 
 const testAccDataSourceSecretField = `
 data "tss_secret_field" "foo" {
-  id = "bar"
-  field = "baz"
+  number = 1
+  slug = "bar"
 }
 `

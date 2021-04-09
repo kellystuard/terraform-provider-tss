@@ -43,29 +43,34 @@ func New(version string) func() *schema.Provider {
 					Type:        schema.TypeString,
 					Required:    true,
 					DefaultFunc: schema.EnvDefaultFunc("TSS_USERNAME", nil),
+					Description: "Username passed to the OAuth token endpoint. Can be set through environment variable `TSS_USERNAME`.",
 				},
 				"password": {
 					Type:        schema.TypeString,
 					Required:    true,
 					Sensitive:   true,
 					DefaultFunc: schema.EnvDefaultFunc("TSS_PASSWORD", nil),
+					Description: "Password passed to the OAuth token endpoint. Can be set through environment variable `TSS_USERNAME`.",
 				},
 				"tenant": {
 					Type:        schema.TypeString,
 					Required:    true,
 					DefaultFunc: schema.EnvDefaultFunc("TSS_TENANT", nil),
+					Description: "Tenant used for all API communication. Set to the tenant portion of `https://tenant.secretservercloud.com/`. If using an on-premise installation, set to the full URI of the server (e.g. -- `https://my-server/SecretServer`). Can be set through environment variable `TSS_TENANT`.",
 				},
 				"grant_type": {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Default:     "password",
 					DefaultFunc: schema.EnvDefaultFunc("TSS_GRANT_TYPE", nil),
+					Description: "Grant type passed to the OAuth token endpoint. Default is `password`. Can be set through environment variable `TSS_GRANT_TYPE`.",
 				},
 				"timeout": {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Default:     "10s",
 					DefaultFunc: schema.EnvDefaultFunc("TSS_TIMEOUT", nil),
+					Description: "Timeout duration used for all API communication. Default is `10s` (10 seconds). Can be set through environment variable `TSS_TIMEOUT`.",
 				},
 			},
 		}
@@ -92,8 +97,15 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		grant_type := d.Get("grant_type").(string)
 		timeout, err := time.ParseDuration(d.Get("timeout").(string))
 
+		var base_url string
+		if strings.Contains(tenant, "//") {
+			base_url = tenant
+		} else {
+			base_url = fmt.Sprintf("https://%s.secretservercloud.com", tenant)
+		}
+
 		config := &apiClient{
-			BaseUrl:   fmt.Sprintf("https://%s.secretservercloud.com", tenant),
+			BaseUrl:   base_url,
 			Timeout:   timeout,
 			UserAgent: p.UserAgent("terraform-provider-tss", version),
 		}
@@ -130,7 +142,6 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		}
 
 		json.NewDecoder(resp.Body).Decode(config)
-//return config, diag.Errorf("%s", config.AccessToken)
 
 		return config, diags
 	}

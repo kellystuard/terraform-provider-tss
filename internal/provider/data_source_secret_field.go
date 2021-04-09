@@ -17,11 +17,11 @@ func dataSourceSecretField() *schema.Resource {
 		ReadContext: dataSourceSecretFieldRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Computed:    true,
-				Description: "Secret ID",
-				Type:        schema.TypeString,
-			},
+			// "id": {
+			// 	Computed:    true,
+			// 	Description: "Unique secret ID",
+			// 	Type:        schema.TypeString,
+			// },
 			"number": {
 				Description: "Secret ID",
 				Required:    true,
