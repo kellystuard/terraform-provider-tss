@@ -2,6 +2,12 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,10 +33,40 @@ func New(version string) func() *schema.Provider {
 	return func() *schema.Provider {
 		p := &schema.Provider{
 			DataSourcesMap: map[string]*schema.Resource{
-				"scaffolding_data_source": dataSourceScaffolding(),
+				"tss_secret_field": dataSourceSecretField(),
 			},
-			ResourcesMap: map[string]*schema.Resource{
-				"scaffolding_resource": resourceScaffolding(),
+			// ResourcesMap: map[string]*schema.Resource{
+			// 	"secret_resource": resourceSecret(),
+			// },
+			Schema: map[string]*schema.Schema{
+				"username": {
+					Type:        schema.TypeString,
+					Required:    true,
+					DefaultFunc: schema.EnvDefaultFunc("TSS_USERNAME", nil),
+				},
+				"password": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Sensitive:   true,
+					DefaultFunc: schema.EnvDefaultFunc("TSS_PASSWORD", nil),
+				},
+				"tenant": {
+					Type:        schema.TypeString,
+					Required:    true,
+					DefaultFunc: schema.EnvDefaultFunc("TSS_TENANT", nil),
+				},
+				"grant_type": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Default:     "password",
+					DefaultFunc: schema.EnvDefaultFunc("TSS_GRANT_TYPE", nil),
+				},
+				"timeout": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Default:     "10s",
+					DefaultFunc: schema.EnvDefaultFunc("TSS_TIMEOUT", nil),
+				},
 			},
 		}
 
@@ -41,17 +77,61 @@ func New(version string) func() *schema.Provider {
 }
 
 type apiClient struct {
-	// Add whatever fields, client or connection info, etc. here
-	// you would need to setup to communicate with the upstream
-	// API.
+	AccessToken string `json:"access_token"`
+	BaseUrl     string
+	Timeout     time.Duration
+	UserAgent   string
 }
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	return func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		// Setup a User-Agent for your API client (replace the provider name for yours):
-		// userAgent := p.UserAgent("terraform-provider-scaffolding", version)
-		// TODO: myClient.UserAgent = userAgent
+	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
-		return &apiClient{}, nil
+		username := d.Get("username").(string)
+		password := d.Get("password").(string)
+		tenant := d.Get("tenant").(string)
+		grant_type := d.Get("grant_type").(string)
+		timeout, err := time.ParseDuration(d.Get("timeout").(string))
+
+		config := &apiClient{
+			BaseUrl:   fmt.Sprintf("https://%s.secretservercloud.com", tenant),
+			Timeout:   timeout,
+			UserAgent: p.UserAgent("terraform-provider-tss", version),
+		}
+		if err != nil {
+			return config, diag.FromErr(err)
+		}
+
+		client := &http.Client{
+			Timeout: config.Timeout,
+		}
+
+		var diags diag.Diagnostics
+
+		body := strings.NewReader(fmt.Sprintf(
+			"username=%s&password=%s&grant_type=%s",
+			username, password, grant_type,
+		))
+		url := config.BaseUrl + "/oauth2/token"
+		req, err := http.NewRequest("POST", url, body)
+		if err != nil {
+			return config, diag.FromErr(err)
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return config, diag.FromErr(err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != 200 {
+			body, _ := io.ReadAll(resp.Body)
+			return config, diag.Errorf("Oauth token response: (%d) %s", resp.StatusCode, body)
+		}
+
+		json.NewDecoder(resp.Body).Decode(config)
+//return config, diag.Errorf("%s", config.AccessToken)
+
+		return config, diags
 	}
 }

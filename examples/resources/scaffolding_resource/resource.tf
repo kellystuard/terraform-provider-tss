@@ -1,3 +1,5 @@
-resource "scaffolding_resource" "example" {
-  sample_attribute = "foo"
+resource tss_secret_field test_password {
+  number = 1
+  slug   = "password"
+  value  = "super-secret-password-value"
 }
