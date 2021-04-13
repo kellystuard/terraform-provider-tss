@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -91,6 +92,9 @@ type apiClient struct {
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
+		log := hclog.Default()
+		log.Trace("[TRACE] Configuring TSS provider")
+
 		username := d.Get("username").(string)
 		password := d.Get("password").(string)
 		tenant := d.Get("tenant").(string)
@@ -100,8 +104,10 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		var base_url string
 		if strings.Contains(tenant, "//") {
 			base_url = tenant
+			log.Trace("Using on-premise instance", "tenant", tenant, "url", base_url)
 		} else {
 			base_url = fmt.Sprintf("https://%s.secretservercloud.com", tenant)
+			log.Trace("Using cloud instance", "tenant", tenant, "url", base_url)
 		}
 
 		config := &apiClient{
@@ -119,12 +125,14 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		var diags diag.Diagnostics
 
-		body := strings.NewReader(fmt.Sprintf(
+		body := fmt.Sprintf(
 			"username=%s&password=%s&grant_type=%s",
 			username, password, grant_type,
-		))
+		)
 		url := config.BaseUrl + "/oauth2/token"
-		req, err := http.NewRequest("POST", url, body)
+
+		log.Trace("Posting OAuth request", "url", url, "body", body, "timeout", config.Timeout)
+		req, err := http.NewRequest("POST", url, strings.NewReader(body))
 		if err != nil {
 			return config, diag.FromErr(err)
 		}
@@ -136,12 +144,14 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		}
 		defer resp.Body.Close()
 
+		log.Trace("Received OAuth response", "StatusCode", resp.StatusCode, "ContentLength", resp.ContentLength)
 		if resp.StatusCode != 200 {
 			body, _ := io.ReadAll(resp.Body)
 			return config, diag.Errorf("Oauth token response: (%d) %s", resp.StatusCode, body)
 		}
 
 		json.NewDecoder(resp.Body).Decode(config)
+		log.Trace("OAuth response", "AccessToken", config.AccessToken)
 
 		return config, diags
 	}

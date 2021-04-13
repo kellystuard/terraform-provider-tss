@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -17,11 +18,6 @@ func dataSourceSecretField() *schema.Resource {
 		ReadContext: dataSourceSecretFieldRead,
 
 		Schema: map[string]*schema.Schema{
-			// "id": {
-			// 	Computed:    true,
-			// 	Description: "Unique secret ID",
-			// 	Type:        schema.TypeString,
-			// },
 			"number": {
 				Description: "Secret ID",
 				Required:    true,
@@ -43,6 +39,10 @@ func dataSourceSecretField() *schema.Resource {
 }
 
 func dataSourceSecretFieldRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+	log := hclog.Default()
+	log.Trace("[TRACE] Reading secret field")
+
 	// use the meta value to retrieve your client from the provider configure method
 	config := meta.(*apiClient)
 	client := &http.Client{Timeout: config.Timeout}
@@ -52,6 +52,8 @@ func dataSourceSecretFieldRead(ctx context.Context, d *schema.ResourceData, meta
 	number := d.Get("number").(int)
 	slug := d.Get("slug")
 	url := fmt.Sprintf("%s/api/v1/secrets/%d/fields/%s", config.BaseUrl, number, slug)
+
+	log.Trace("[TRACE] Reading secret field from API", "url", url, "access token", config.AccessToken, "timeout", config.Timeout)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil{
