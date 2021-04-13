@@ -1,22 +1,13 @@
-# Terraform Provider Scaffolding
+# Terraform Provider for Thycotic Secret Server
 
-This repository is a *template* for a [Terraform](https://www.terraform.io) provider. It is intended as a starting point for creating Terraform providers, containing:
+:information_source: This provider is in no way authorized or affiliated with Thycotic. I have no association with the company, other than working for a company that uses their Secret Server product. To my knowledge, neither I nor Thycotic provide commercial support for this product. If you have a problem with how the product works, either file an issue or submit a pull request.
 
- - A resource, and a data source (`internal/provider/`),
- - Examples (`examples/`) and generated documentation (`docs/`),
- - Miscellaneous meta files.
- 
-These files contain boilerplate code that you will need to edit to create your own Terraform provider. A full guide to creating Terraform providers can be found at [Writing Custom Providers](https://www.terraform.io/docs/extend/writing-custom-providers.html).
-
-Please see the [GitHub template repository documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for how to create a new repository from this template on GitHub.
-
-Once you've written your provider, you'll want to [publish it on the Terraform Registry](https://www.terraform.io/docs/registry/providers/publishing.html) so that others can use it.
-
+This provider has been published to the Terraform Registry at https://registry.terraform.io/providers/kellystuard/tss.
 
 ## Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) >= 0.13.x
--	[Go](https://golang.org/doc/install) >= 1.15
+-	[Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
+-	[Go](https://golang.org/doc/install) >= 1.16
 
 ## Building The Provider
 
