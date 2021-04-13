@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -99,7 +100,11 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		password := d.Get("password").(string)
 		tenant := d.Get("tenant").(string)
 		grant_type := d.Get("grant_type").(string)
-		timeout, err := time.ParseDuration(d.Get("timeout").(string))
+		timeout, err := time.ParseDuration(d.Get("timeout").(string));
+
+		username = url.QueryEscape(username);
+		password = url.QueryEscape(password);
+		tenant = url.QueryEscape(tenant);
 
 		var base_url string
 		if strings.Contains(tenant, "//") {
