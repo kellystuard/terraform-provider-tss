@@ -104,7 +104,6 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		username = url.QueryEscape(username);
 		password = url.QueryEscape(password);
-		tenant = url.QueryEscape(tenant);
 
 		var base_url string
 		if strings.Contains(tenant, "//") {
