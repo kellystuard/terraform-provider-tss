@@ -8,8 +8,6 @@ import (
 )
 
 func TestAccDataSourceSecretField(t *testing.T) {
-	t.Skip("data source not yet implemented, remove this once you add your own code")
-
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
@@ -28,6 +26,6 @@ func TestAccDataSourceSecretField(t *testing.T) {
 const testAccDataSourceSecretField = `
 data "tss_secret_field" "foo" {
   number = 1
-  slug = "bar"
+  slug = "password"
 }
 `
