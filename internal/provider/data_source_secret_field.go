@@ -2,8 +2,8 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/hashicorp/go-hclog"
@@ -68,15 +68,14 @@ func dataSourceSecretFieldRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil{
-		return diag.FromErr(err)
-	}
-	temp_result := string(body)
-	result := temp_result[1:len(temp_result)-1]
-
 	if resp.StatusCode != 200{
-		return diag.Errorf("Secret field response: (%d) %s", resp.StatusCode, result)
+		return diag.Errorf("Secret field response: %d", resp.StatusCode)
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+	var result string
+	if decoder.Decode(&result) != nil{
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("value", result); err != nil{

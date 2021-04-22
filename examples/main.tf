@@ -20,5 +20,6 @@ data "tss_secret_field" "test_password" {
 }
 
 output "test_password" {
-  value = "${data.tss_secret_field.test_username.value} : ${data.tss_secret_field.test_password.value}"
+  value     = "${data.tss_secret_field.test_username.value} : ${data.tss_secret_field.test_password.value}"
+  sensitive = true
 }
