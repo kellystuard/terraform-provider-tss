@@ -74,6 +74,9 @@ jobs:
       env:
         TF_ACC: "1"
         TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+        TSS_USERNAME: ${{ secrets.TSS_USERNAME }}
+        TSS_PASSWORD: ${{ secrets.TSS_PASSWORD }}
+        TSS_TENANT: ${{ secrets.TSS_TENANT }}
 
         # Set whatever additional acceptance test env vars here. You can
         # optionally use data from your repository secrets using the
