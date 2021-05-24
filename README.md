@@ -36,7 +36,38 @@ Then commit the changes to `go.mod` and `go.sum`.
 
 ## Using the provider
 
-Fill this in for each provider
+```tf
+terraform {
+  required_providers {
+    tss = {
+      source = "kellystuard/tss"
+    }
+  }
+}
+
+provider "tss" {
+  username = "john"      # Can be set through environment variable `TSS_USERNAME`.
+  password = "<secret>"  # Can be set through environment variable `TSS_PASSWORD`.
+  tenant   = "johnvault" # Can be set through environment variable `TSS_TENANT`.
+                         # Set to the tenant portion of `https://tenant.secretservercloud.com/`.
+                         # If using an on-premise installation, set to the full URI of the server (e.g. -- `https://my-server/SecretServer`).
+}
+
+data "tss_secret_field" "test_username" {
+  number = 42
+  slug   = "username"
+}
+
+data "tss_secret_field" "test_password" {
+  number = 42
+  slug   = "password"
+}
+
+output "test_password" {
+  value     = "${data.tss_secret_field.test_username.value} : ${data.tss_secret_field.test_password.value}"
+  sensitive = true
+}
+```
 
 ## Developing the Provider
 
