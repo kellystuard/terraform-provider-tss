@@ -1,5 +1,7 @@
 # Terraform Provider for Thycotic Secret Server
 
+:information_source: Since writing this provider, Thycotic has published their own provider to the registry. It can be found at https://registry.terraform.io/providers/thycotic/tss/latest.
+
 :information_source: This provider is in no way authorized or affiliated with Thycotic. I have no association with the company, other than working for a company that uses their Secret Server product. To my knowledge, neither I nor Thycotic provide commercial support for this product. If you have a problem with how the product works, either file an issue or submit a pull request.
 
 This provider has been published to the Terraform Registry at https://registry.terraform.io/providers/kellystuard/tss.
